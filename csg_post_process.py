@@ -27,6 +27,7 @@ os.makedirs(outdir, exist_ok=True)
 
 data_sources = ["ccle", "ctrp", "gcsi", "gdsc1", "gdsc2"]
 trg_name = "AUC"
+round_digits = 3
 
 def calc_mae(y_true, y_pred):
     return sklearn.metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
@@ -99,7 +100,8 @@ for sc_name, sc_func in scores_names.items():
             # Data split
             for split in range(10):
                 fname = f"{src}_{trg}_split_{split}.csv"
-                df = pd.read_csv(resdir/fname)
+                df = pd.read_csv(resdir/fname, sep=",")
+                # df = pd.read_csv(resdir/fname, sep="\t")
 
                 # for sc_name, sc_func in scores_names.items():
                 y_true = df["True"].values
@@ -115,7 +117,7 @@ del scores
 # ====================
 # Generate tables
 # ====================
-import ipdb; ipdb.set_trace(context=5)
+# import ipdb; ipdb.set_trace(context=5)
 # Data source study
 for sc_name in scores_names.keys():
     print("\nMetric:", sc_name)
@@ -132,8 +134,8 @@ for sc_name in scores_names.keys():
         # print(scores)
 
         for trg in data_sources:
-            mean_scores[trg] = round(np.mean(mean_scores[trg]), 5)
-            err_scores[trg] = round(sem(err_scores[trg]), 5)
+            mean_scores[trg] = round(np.mean(mean_scores[trg]), round_digits)
+            err_scores[trg] = round(sem(err_scores[trg]), round_digits)
 
         # import ipdb; ipdb.set_trace(context=5)
         mean_df[src] = mean_scores
