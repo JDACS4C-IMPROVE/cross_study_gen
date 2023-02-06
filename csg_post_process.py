@@ -148,4 +148,42 @@ for sc_name in scores_names.keys():
     err_df.to_csv(outdir/f"{sc_name}_err_table.csv", index=True)
 
 
+# ====================
+# Summary table
+# ====================
+# import ipdb; ipdb.set_trace(context=5)
+# Data source study
+sc_df = []
+cols = ["Metric", "Diag", "Off-diag", "Diag_std", "Off-diag_std"]
+for i, sc_name in enumerate(scores_names):
+    # print("\nMetric:", sc_name)
+    sc_item = {}
+    sc_item["Metric"] = sc_name.upper()
+
+    mean_df = pd.read_csv(outdir/f"{sc_name}_mean_table.csv")
+    n = mean_df.shape[0]
+
+    # Diag
+    vv = np.diag(mean_df.iloc[:, 1:].values)
+    sc_item["Diag"] = np.round(sum(vv)/n, 3)
+    sc_item["Diag_std"] = np.round(np.std(vv), 3)
+
+    # Off-diag
+    vv = mean_df.iloc[:, 1:].values
+    np.fill_diagonal(vv, 0)
+    sc_item["Off-diag"] = np.round(sum(np.ravel(vv)) / (n*n - n), 3)
+    sc_item["Off-diag_std"] = np.round(np.std(np.ravel(vv)), 3)
+
+    for ii, dname in enumerate(mean_df.iloc[:, 0].values):
+        dname = dname.upper()
+        sc_item[dname] = np.round(sum(vv[ii, :] / (n - 1)), 3)
+        if i == 0:
+            cols.append(dname)
+
+    sc_df.append(sc_item)
+
+sc_df = pd.DataFrame(sc_df, columns=cols)
+sc_df.to_csv(outdir/f"summary_table.csv", index=False)
+print(sc_df)
+
 print("Finished all")
